@@ -58,24 +58,23 @@ module Ebuberable
     arr
   end
 
-  #Doesn`t work
-  def reduce(num=1, memo)
-    res = self.first # if num not passed https://blog.udemy.com/ruby-inject/
-    self.drop(1).each do |item|
-      res = res.public_send(memo, item)
+  #accumulator shouldn't be required (needed to fix)
+  def reduces(accumulator, operation = nil, &block)
+    if !operation && !block
+      raise ArgumentError, "no block given"
     end
-    res
-  end
 
-  def grep(pat, &block)
-    arr = []
-    self.each do |item|
-      if (pat === item)
-        res = block_given? ? yield(item) : item
-        arr << res
+    block = case operation
+      when nil
+        block
+      else
+        lambda { |acc,value| acc.send(operation, value) }
       end
+
+    self.each do |item|
+      accumulator = block.call(accumulator, item)
     end
-    arr
+      accumulator
   end
 
   def partition(&block)
